@@ -7,7 +7,8 @@ export default class Login extends React.Component {
         super();
         this.state = {
             loggingIn: false,
-            error: true,
+            error: false,
+            errorMessage: "",
             username: "",
             password: ""
         }
@@ -16,18 +17,34 @@ export default class Login extends React.Component {
         this.toggleLogin = this.toggleLogin.bind(this);
         this.passwordChange = this.passwordChange.bind(this);
         this.usernameChange = this.usernameChange.bind(this);
+        this.resetError = this.resetError.bind(this);
     }
 
     login() {
         this.toggleLogin();
+
+        this.setState({
+            errorMessage: "",
+            error: false
+        })
 
         let loginRequest = {
             username: this.state.username,
             password: this.state.password
         }
 
-        Axios.post('', loginRequest).then(response =>{
-
+        Axios.post('http://localhost/v1/auth/login', JSON.stringify(loginRequest)).then(response =>{
+            if(response.data.SUCCESS){
+                var sessionId = response.data.session.id;
+                sessionStorage.setItem("sessionId", sessionId);
+                window.location = "/files";
+            }else if(response.data.ERROR){
+                this.setState({
+                    errorMessage: response.data.MESSAGE,
+                    error: true,
+                    loggingIn: false
+                })
+            }
         });
     }
 
@@ -46,6 +63,13 @@ export default class Login extends React.Component {
     passwordChange(e) {
         this.setState({
             password: e.target.value
+        })
+    }
+
+    resetError(){
+        this.setState({
+            error: false,
+            errorMessage: ""
         })
     }
 
@@ -70,8 +94,8 @@ export default class Login extends React.Component {
 
         if(this.state.error){
             alert = <div className="alert alert-danger alert-dismissible fade show" role="alert">
-            <strong>Error!</strong> Invalid username or password.
-            <button type="button" className="close" data-dismiss="alert" aria-label="Close">
+            <strong>Error!</strong> {this.state.errorMessage}
+            <button type="button" className="close" data-dismiss="alert" aria-label="Close" onClick={this.resetError}>
               <span aria-hidden="true">&times;</span>
             </button>
           </div>;

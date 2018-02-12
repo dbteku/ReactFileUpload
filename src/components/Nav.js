@@ -1,9 +1,75 @@
 import React from 'react'
 import Login from './Login'
+// import {withRouter} from "react-router-dom";
 
 export default class Nav extends React.Component {
 
+    constructor(props) {
+        super(props);
+        this.props.linkNav((navLinks) => {
+            this.changeNav(navLinks);
+        });
+        this.state = {
+            navLinks: [{
+                href: "/",
+                title: "Home",
+                active: true
+            },
+            {
+                href: "#login",
+                title: "Login",
+                active: false,
+                data: {
+                    dataToggle: true,
+                    toggle: "modal"
+                }
+            }
+            ]
+        }
+        this.changeNav = this.changeNav.bind(this);
+    }
+
+    changeNav(navLinks) {
+        this.setState({
+            navLinks: navLinks
+        })
+    }
+
     render() {
+
+        let navBar = null;
+
+
+        if (this.state.navLinks.length > 0) {
+            navBar = this.state.navLinks.map(function (navLink) {
+                let newLink = null;
+                if (navLink.active) {
+                    newLink = <li key={navLink.title} className="nav-item active">
+                        <a className="nav-link" href={navLink.href}>{navLink.title} <span className="sr-only">(current)</span></a>
+                    </li>
+                } else {
+                    if (navLink.data) {
+                        if (navLink.data.dataToggle) {
+                            newLink = <li key={navLink.title} className="nav-item">
+                                <a className="nav-link" data-toggle={navLink.data.toggle} href={navLink.href}>{navLink.title}</a>
+                            </li>
+                        }
+                    } else if (navLink.action) {
+                        newLink = <li key={navLink.title} className="nav-item">
+                            <a className="nav-link" onClick={navLink.action} href={navLink.href}>{navLink.title}</a>
+                        </li>
+                    }
+                    else {
+                        newLink = <li key={navLink.title} className="nav-item">
+                            <a className="nav-link" href={navLink.href}>{navLink.title}</a>
+                        </li>
+                    }
+
+                }
+                return newLink;
+            });
+        }
+
         return (
             <div className="Nav">
                 <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -13,19 +79,11 @@ export default class Nav extends React.Component {
                     </button>
                     <div className="collapse navbar-collapse" id="navbarNav">
                         <ul className="navbar-nav">
-                            <li className="nav-item active">
-                                <a className="nav-link" href="/">Home <span className="sr-only">(current)</span></a>
-                            </li>
-                            <li className="nav-item">
-                                <a className="nav-link" href="/files">Files</a>
-                            </li>
-                            <li className="nav-item">
-                                <a  className="nav-link" data-toggle="modal" href="#login">Login</a>
-                            </li>
+                            {navBar}
                         </ul>
                     </div>
                 </nav>
-                <Login/>
+                <Login />
                 {this.props.children}
             </div>
         );
