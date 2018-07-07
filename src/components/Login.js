@@ -47,8 +47,12 @@ export default class Login extends React.Component {
         }
       })
       .catch(e => {
+        let errorMessage = "Something went wrong... Try again later!";
+        if(e.response.status === 400){
+          errorMessage = e.response.data.MESSAGE
+        }
         this.setState({
-          errorMessage: "Something went wrong... Try again later!",
+          errorMessage,
           error: true,
           loggingIn: false
         });
