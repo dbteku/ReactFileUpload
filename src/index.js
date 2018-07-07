@@ -5,9 +5,9 @@ import App from "./App";
 import Nav from "./components/Nav";
 import FilePage from "./pages/FilePage";
 // import registerServiceWorker from './registerServiceWorker';
-import { BrowserRouter as Router, Route, Switch } from "react-router-dom";
+import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom";
 import FileServiceApi from "./components/services/FileServiceApi";
-import SubStores from './stateful/SubStores';
+import SubStores from "./stateful/SubStores";
 
 SubStores();
 
@@ -21,12 +21,6 @@ function changeNav(navLinks) {
   navCallback(navLinks);
 }
 
-function hasSession(nextState, replace) {
-    if(!FileServiceApi.isLoggedIn()){
-        replace('/');
-    }
-}
-
 render(
   <Nav linkNav={linkNav}>
     <Router>
@@ -35,7 +29,13 @@ render(
         <Route
           exact
           path="/files"
-          render={() => <FilePage changeNav={changeNav} onEnter={hasSession} />}
+          render={() => {
+              let component = <Redirect to="/"/>
+            if (FileServiceApi.isLoggedIn()) {
+              component = <FilePage changeNav={changeNav} />;
+            }
+            return component;
+          }}
         />
         {/* <Route component={NotFound} status={404} /> */}
       </Switch>

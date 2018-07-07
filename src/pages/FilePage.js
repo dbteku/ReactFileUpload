@@ -6,7 +6,9 @@ class FilePage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      loggedIn: false
+      loading: false,
+      loggedIn: false,
+      list: []
     };
   }
   componentWillMount() {
@@ -29,7 +31,24 @@ class FilePage extends Component {
     }
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    this.setState({
+      loggedIn: FileServiceApi.isLoggedIn(),
+      loading: true
+    });
+    FileServiceApi.getFiles().then(kickback => {
+      if (kickback.error) {
+        if (kickback.payload.status === 401) {
+          window.href = "/";
+        }
+      } else {
+        this.setState({
+          list: kickback.payload.DATA,
+          loading: false
+        });
+      }
+    });
+  }
 
   logout() {
     FileServiceApi.logout();
@@ -38,37 +57,37 @@ class FilePage extends Component {
   }
 
   render() {
-    let me = this;
     let page = (
       <div>
         <p>Loading...</p>
       </div>
     );
 
+    let body = <tbody>Loading...</tbody>;
+
+    const list = this.state.list.map(file => {
+        return (
+          <tr>
+            <td>{file}</td>
+          </tr>
+        );
+      });
+
     if (this.state.loggedIn) {
+      if (!this.state.loading) {
+        body = <tbody>{list}</tbody>;
+      }
       page = (
-        <div className="jumbotron">
-          <h1 className="display-4">Welcome!</h1>
-          <p className="lead">You are logged in!</p>
-          <hr className="my-4" />
-          <p className="lead">
-            <a
-              className="btn btn-primary btn-lg"
-              data-toggle="modal"
-              onClick={this.logout}
-              role="button"
-            >
-              Logout
-            </a>
-          </p>
-        </div>
+        <table className="table table-dark">
+          <thead>
+            <tr>
+              <th scope="col">File Name</th>
+              <th scope="col">Options</th>
+            </tr>
+          </thead>
+          {body}
+        </table>
       );
-    } else {
-      setTimeout(function() {
-        if (!me.state.loggedIn) {
-          window.location = "/";
-        }
-      }, 1000);
     }
 
     return <div className="FilePage">{page}</div>;
