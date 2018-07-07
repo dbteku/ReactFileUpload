@@ -1,6 +1,7 @@
 import React from 'react'
 import Login from './Login'
-// import {withRouter} from "react-router-dom";
+import {lookup} from '@boostbank/stateful/lib/substore';
+import {connectTo, disconnectFrom} from '@boostbank/react-stateful';
 
 export default class Nav extends React.Component {
 
@@ -33,6 +34,19 @@ export default class Nav extends React.Component {
         this.setState({
             navLinks: navLinks
         })
+    }
+
+    
+    componentWillMount() {
+        connectTo(this, lookup().nav, state=>{
+            this.setState({
+                navLinks: state.links
+            });
+        });
+    }
+
+    componentWillUnmount() {
+        disconnectFrom(this, lookup().nav);
     }
 
     render() {
