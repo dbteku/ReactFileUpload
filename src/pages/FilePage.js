@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import FileServiceApi from "./../components/services/FileServiceApi";
 import ChangeNav from "../actions/ChangeNav";
+import uuid from "uuid/v1";
 
 class FilePage extends Component {
   constructor(props) {
@@ -63,15 +64,21 @@ class FilePage extends Component {
       </div>
     );
 
-    let body = <tbody>Loading...</tbody>;
+    let body = (
+      <tbody>
+        <tr>
+          <td>Loading...</td>
+        </tr>
+      </tbody>
+    );
 
     const list = this.state.list.map(file => {
-        return (
-          <tr>
-            <td>{file}</td>
-          </tr>
-        );
-      });
+      return (
+        <tr key={uuid()}>
+          <td>{file}</td>
+        </tr>
+      );
+    });
 
     if (this.state.loggedIn) {
       if (!this.state.loading) {

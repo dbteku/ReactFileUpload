@@ -32,7 +32,7 @@ export default class Login extends React.Component {
       password: this.state.password
     };
 
-    Axios.post("http://localhost/v1/auth/login", JSON.stringify(loginRequest))
+    Axios.post("http://76.76.252.111:2525/v1/auth/login", JSON.stringify(loginRequest))
       .then(response => {
         if (response.data.SUCCESS) {
           var sessionId = response.data.session.id;

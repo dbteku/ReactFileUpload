@@ -5,7 +5,12 @@ import App from "./App";
 import Nav from "./components/Nav";
 import FilePage from "./pages/FilePage";
 // import registerServiceWorker from './registerServiceWorker';
-import { BrowserRouter as Router, Route, Switch, Redirect } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Switch,
+  Redirect
+} from "react-router-dom";
 import FileServiceApi from "./components/services/FileServiceApi";
 import SubStores from "./stateful/SubStores";
 
@@ -30,7 +35,7 @@ render(
           exact
           path="/files"
           render={() => {
-              let component = <Redirect to="/"/>
+            let component = <Redirect to="/" />;
             if (FileServiceApi.isLoggedIn()) {
               component = <FilePage changeNav={changeNav} />;
             }
