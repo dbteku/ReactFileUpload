@@ -11,6 +11,9 @@ class FilePage extends Component {
       loggedIn: false,
       list: []
     };
+    this.getFileList = this.getFileList.bind(this);
+    this.handleDelete = this.handleDelete.bind(this);
+    this.handleDownload = this.handleDownload.bind(this);
   }
   componentWillMount() {
     if (FileServiceApi.isLoggedIn()) {
@@ -37,6 +40,10 @@ class FilePage extends Component {
       loggedIn: FileServiceApi.isLoggedIn(),
       loading: true
     });
+    this.getFileList();
+  }
+
+  getFileList(){
     FileServiceApi.getFiles().then(kickback => {
       if (kickback.error) {
         if (kickback.payload.status === 401) {
@@ -55,6 +62,19 @@ class FilePage extends Component {
     FileServiceApi.logout();
     sessionStorage.setItem("sessionId", "");
     window.location = "/";
+  }
+
+  handleDownload(fileName){
+
+  }
+
+  handleDelete(fileName){
+    this.setState({
+      loading: true
+    });
+    FileServiceApi.deleteFile(fileName).then(()=>{
+      this.getFileList();
+    });
   }
 
   render() {
@@ -76,6 +96,16 @@ class FilePage extends Component {
       return (
         <tr key={uuid()}>
           <td>{file}</td>
+          <td>
+            <div class="btn-group" role="group" aria-label="Basic example">
+              <button type="button" class="btn btn-primary" onClick={()=>{this.handleDownload(file)}}>
+                Download
+              </button>
+              <button type="button" class="btn btn-danger" onClick={()=>{this.handleDelete(file)}}>
+                Delete
+              </button>
+            </div>
+          </td>
         </tr>
       );
     });

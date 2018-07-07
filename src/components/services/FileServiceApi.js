@@ -8,14 +8,32 @@ export default class FileServiceApi {
   static getFiles() {
     return new Promise(resolve => {
       const sessionId = sessionStorage.getItem("sessionId");
-       Axios.get("http://76.76.252.111:2525/v1/files", {
+      Axios.get("http://localhost/v1/files", {
+        headers: {
+          "Content-Type": "application/json",
+          authentication: sessionId
+        }
+      })
+        .then(response => {
+          resolve({ error: false, payload: response.data });
+        })
+        .catch(e => {
+          resolve({ error: true, payload: e });
+        });
+    });
+  }
+
+  static deleteFile(fileName) {
+    const sessionId = sessionStorage.getItem("sessionId");
+    return new Promise(resolve => {
+      Axios.delete(`http://localhost/v1/files/${fileName}`, {
         headers: {
           "Content-Type": "application/json",
           authentication: sessionId
         }
       }).then(response=>{
-        resolve({error: false, payload: response.data})
-      }).catch(e=>{
+        resolve({error: false, payload: response.data});
+      }).catch(e =>{
         resolve({error: true, payload: e})
       });
     });
@@ -27,7 +45,7 @@ export default class FileServiceApi {
       if (sessionId === undefined || sessionId === "") {
         resolve(false);
       } else {
-        Axios.post("http://76.76.252.111:2525/v1/auth/logout", {
+        Axios.post("http://localhost/v1/auth/logout", {
           headers: {
             "Content-Type": "application/json",
             authentication: sessionId
