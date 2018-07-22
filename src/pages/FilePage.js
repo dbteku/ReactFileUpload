@@ -84,7 +84,9 @@ class FilePage extends Component {
     });
     FileServiceApi.getFiles(this.state.fileSystem).then(kickback => {
       if (kickback.error) {
-        if (kickback.payload.response.status === 401) {
+        if (kickback.payload.response && kickback.payload.response.status === 401) {
+          this.logout();
+        }else if(kickback.payload.response === undefined){
           this.logout();
         }
       } else {
