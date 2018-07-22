@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import FileServiceApi from "./../components/services/FileServiceApi";
 import ChangeNav from "../actions/ChangeNav";
 import uuid from "uuid/v1";
+import qs from "qs";
 
 class FilePage extends Component {
   constructor(props) {
@@ -14,6 +15,15 @@ class FilePage extends Component {
         activeDirectory: "/"
       }
     };
+    const fixedQuery = props.location.search.replace("?", "");
+    const parsedQueryParams =  qs.parse(fixedQuery);
+    if(parsedQueryParams.activeDirectory){
+      this.state.fileSystem.activeDirectory = parsedQueryParams.activeDirectory;
+    }
+    props.history.push({
+      pathname: "/files",
+      search: `?${qs.stringify(this.state.fileSystem)}`
+    });
     this.getFileList = this.getFileList.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleDownload = this.handleDownload.bind(this);
@@ -36,6 +46,25 @@ class FilePage extends Component {
           }
         }
       ]);
+    }
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (typeof nextProps.location.search === "string") {
+      const fixedQuery = nextProps.location.search.replace("?", "");
+      const queryParams = qs.parse(fixedQuery);
+      if (
+        queryParams.activeDirectory &&
+        queryParams.activeDirectory !== this.state.fileSystem.activeDirectory
+      ) {
+        this.setState({
+          fileSystem: {
+            activeDirectory: queryParams.activeDirectory
+          }
+        },()=>{
+          this.getFileList();
+        });
+      }
     }
   }
 
@@ -75,11 +104,12 @@ class FilePage extends Component {
 
   handleDownload(fileName) {}
 
-  handleDelete(fileName) {
+  handleDelete(file) {
     this.setState({
       loading: true
     });
-    FileServiceApi.deleteFile(fileName).then(() => {
+    console.log(this.state.fileSystem.activeDirectory + "/" + file.fileName);
+    FileServiceApi.deleteFile(this.state.fileSystem.activeDirectory + "/" + file.fileName).then(() => {
       this.getFileList();
     });
   }
@@ -95,14 +125,25 @@ class FilePage extends Component {
   }
 
   handleFolderOpen(file) {
+    let activeDirectory =
+      this.state.fileSystem.activeDirectory + "/" + file.fileName;
+    if (
+      this.state.fileSystem.activeDirectory.lastIndexOf("/") ===
+      this.state.fileSystem.activeDirectory.length - 1
+    ) {
+      activeDirectory = this.state.fileSystem.activeDirectory + file.fileName;
+    }
     this.setState(
       {
         fileSystem: {
-          activeDirectory:
-            this.state.fileSystem.activeDirectory + "/" + file.fileName
+          activeDirectory
         }
       },
       () => {
+        this.props.history.push({
+          pathname: "/files",
+          search: `?${qs.stringify(this.state.fileSystem)}`
+        });
         this.getFileList();
       }
     );
@@ -112,7 +153,7 @@ class FilePage extends Component {
     return (
       <tr key={uuid()}>
         <td style={{ display: "inline-block" }}>
-          <i class="fas fa-file" />
+          <i className="fas fa-file" />
           <div style={{ paddingLeft: "8px", display: "inline-block" }}>
             {file.fileName}
           </div>
@@ -147,7 +188,7 @@ class FilePage extends Component {
     return (
       <tr key={uuid()}>
         <td style={{ display: "inline-block" }}>
-          <i class="fas fa-folder-open" />
+          <i className="fas fa-folder-open" />
           <div style={{ paddingLeft: "8px", display: "inline-block" }}>
             {file.fileName}
           </div>

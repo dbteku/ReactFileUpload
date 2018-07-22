@@ -30,14 +30,14 @@ render(
   <Nav linkNav={linkNav}>
     <Router>
       <Switch>
-        <Route exact path="/" render={() => <App changeNav={changeNav} />} />
+        <Route exact path="/" render={props => <App {...props} changeNav={changeNav} />} />
         <Route
           exact
           path="/files"
-          render={() => {
+          render={props => {
             let component = <Redirect to="/" />;
             if (FileServiceApi.isLoggedIn()) {
-              component = <FilePage changeNav={changeNav} />;
+              component = <FilePage {...props} />;
             }
             return component;
           }}
