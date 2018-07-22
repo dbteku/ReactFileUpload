@@ -102,16 +102,24 @@ class FilePage extends Component {
     window.location = "/";
   }
 
-  handleDownload(fileName) {}
+  handleDownload(file) {
+    const path = this.state.fileSystem.activeDirectory + "/" + file.fileName;
+    const filePath = path.replace('//', '/');
+    FileServiceApi.getFile(filePath, file.fileName);
+  }
 
   handleDelete(file) {
     this.setState({
       loading: true
     });
-    console.log(this.state.fileSystem.activeDirectory + "/" + file.fileName);
-    FileServiceApi.deleteFile(this.state.fileSystem.activeDirectory + "/" + file.fileName).then(() => {
-      this.getFileList();
-    });
+    if(file.isDirectory){
+      alert("You cannot delete a directory!");
+    }else{
+      const path = this.state.fileSystem.activeDirectory + "/" + file.fileName;
+      FileServiceApi.deleteFile(path.replace('//', '/')).then(() => {
+        this.getFileList();
+      });
+    }
   }
 
   renderData(file) {
@@ -161,11 +169,11 @@ class FilePage extends Component {
         <td>
           <div className="btn-group" role="group" aria-label="Basic example">
             <button
-              type="button"
               className="btn btn-primary btn-sm"
               onClick={() => {
                 this.handleDownload(file);
               }}
+              download
             >
               Download
             </button>

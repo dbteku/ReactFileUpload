@@ -1,5 +1,6 @@
 import Axios from "axios";
 import qs from 'qs';
+import fileDownload from 'js-file-download';
 
 export default class FileServiceApi {
   static isLoggedIn() {
@@ -26,10 +27,14 @@ export default class FileServiceApi {
     });
   }
 
+  static getFile(filePath, fileName){
+    fileDownload(`http://localhost/v1/files/download?location=${filePath}`, fileName);
+  }
+
   static deleteFile(fileName) {
     const sessionId = sessionStorage.getItem("sessionId");
     return new Promise(resolve => {
-      Axios.delete(`http://localhost/v1/files/${fileName}`, {
+      Axios.delete(`http://localhost/v1/files?location=${fileName}`, {
         headers: {
           "Content-Type": "application/json",
           authentication: sessionId
