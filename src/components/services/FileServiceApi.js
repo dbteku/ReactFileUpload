@@ -1,14 +1,17 @@
 import Axios from "axios";
+import qs from 'qs';
+
 export default class FileServiceApi {
   static isLoggedIn() {
     const sessionId = sessionStorage.getItem("sessionId");
     return sessionId !== undefined && sessionId !== "" && sessionId !== null;
   }
 
-  static getFiles() {
+  static getFiles(activeDirectory) {
     return new Promise(resolve => {
       const sessionId = sessionStorage.getItem("sessionId");
-      Axios.get("http://localhost/v1/files", {
+      console.log("http://localhost/v1/files?" + qs.stringify(activeDirectory));
+      Axios.get("http://localhost/v1/files?" + qs.stringify(activeDirectory), {
         headers: {
           "Content-Type": "application/json",
           authentication: sessionId

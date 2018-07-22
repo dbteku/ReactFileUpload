@@ -9,11 +9,15 @@ class FilePage extends Component {
     this.state = {
       loading: false,
       loggedIn: false,
-      list: []
+      list: [],
+      fileSystem: {
+        activeDirectory: "/"
+      }
     };
     this.getFileList = this.getFileList.bind(this);
     this.handleDelete = this.handleDelete.bind(this);
     this.handleDownload = this.handleDownload.bind(this);
+    this.handleFolderOpen = this.handleFolderOpen.bind(this);
   }
   componentWillMount() {
     if (FileServiceApi.isLoggedIn()) {
@@ -43,11 +47,16 @@ class FilePage extends Component {
     this.getFileList();
   }
 
-  getFileList(){
-    FileServiceApi.getFiles().then(kickback => {
+  getFileList() {
+    this.setState({
+      list: [],
+      loading: true,
+      error: false
+    });
+    FileServiceApi.getFiles(this.state.fileSystem).then(kickback => {
       if (kickback.error) {
-        if (kickback.payload.status === 401) {
-          window.href = "/";
+        if (kickback.payload.response.status === 401) {
+          this.logout();
         }
       } else {
         this.setState({
@@ -64,17 +73,98 @@ class FilePage extends Component {
     window.location = "/";
   }
 
-  handleDownload(fileName){
+  handleDownload(fileName) {}
 
-  }
-
-  handleDelete(fileName){
+  handleDelete(fileName) {
     this.setState({
       loading: true
     });
-    FileServiceApi.deleteFile(fileName).then(()=>{
+    FileServiceApi.deleteFile(fileName).then(() => {
       this.getFileList();
     });
+  }
+
+  renderData(file) {
+    let renderedData = null;
+    if (file.isDirectory) {
+      renderedData = this.renderFolder(file);
+    } else {
+      renderedData = this.renderFile(file);
+    }
+    return renderedData;
+  }
+
+  handleFolderOpen(file) {
+    this.setState(
+      {
+        fileSystem: {
+          activeDirectory:
+            this.state.fileSystem.activeDirectory + "/" + file.fileName
+        }
+      },
+      () => {
+        this.getFileList();
+      }
+    );
+  }
+
+  renderFile(file) {
+    return (
+      <tr key={uuid()}>
+        <td style={{ display: "inline-block" }}>
+          <i class="fas fa-file" />
+          <div style={{ paddingLeft: "8px", display: "inline-block" }}>
+            {file.fileName}
+          </div>
+        </td>
+        <td>
+          <div className="btn-group" role="group" aria-label="Basic example">
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => {
+                this.handleDownload(file);
+              }}
+            >
+              Download
+            </button>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={() => {
+                this.handleDelete(file);
+              }}
+            >
+              Delete
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  }
+
+  renderFolder(file) {
+    return (
+      <tr key={uuid()}>
+        <td style={{ display: "inline-block" }}>
+          <i class="fas fa-folder-open" />
+          <div style={{ paddingLeft: "8px", display: "inline-block" }}>
+            {file.fileName}
+          </div>
+        </td>
+        <td>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => {
+              this.handleFolderOpen(file);
+            }}
+          >
+            Open
+          </button>
+        </td>
+      </tr>
+    );
   }
 
   render() {
@@ -92,23 +182,19 @@ class FilePage extends Component {
       </tbody>
     );
 
-    const list = this.state.list.map(file => {
-      return (
-        <tr key={uuid()}>
-          <td>{file}</td>
-          <td>
-            <div class="btn-group" role="group" aria-label="Basic example">
-              <button type="button" class="btn btn-primary" onClick={()=>{this.handleDownload(file)}}>
-                Download
-              </button>
-              <button type="button" class="btn btn-danger" onClick={()=>{this.handleDelete(file)}}>
-                Delete
-              </button>
-            </div>
-          </td>
+    let list = null;
+
+    if (this.state.list.length <= 0) {
+      list = (
+        <tr>
+          <td>There is no data to display.</td>
         </tr>
       );
-    });
+    } else {
+      list = this.state.list.map(file => {
+        return this.renderData(file);
+      });
+    }
 
     if (this.state.loggedIn) {
       if (!this.state.loading) {
