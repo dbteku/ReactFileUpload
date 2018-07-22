@@ -1,6 +1,5 @@
 import Axios from "axios";
 import qs from 'qs';
-import fileDownload from 'js-file-download';
 
 export default class FileServiceApi {
   static isLoggedIn() {
@@ -28,7 +27,19 @@ export default class FileServiceApi {
   }
 
   static getFile(filePath, fileName){
-    fileDownload(`http://localhost/v1/files/download?location=${filePath}`, fileName);
+    Axios({
+      url: `http://localhost/v1/files/download?location=${filePath}`,
+      method: 'GET',
+      headers: {authentication: sessionStorage.getItem('sessionId')},
+      responseType: 'blob', // important
+    }).then((response) => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', fileName);
+      document.body.appendChild(link);
+      link.click();
+    });
   }
 
   static deleteFile(fileName) {
